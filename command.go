@@ -14,7 +14,7 @@ type Command struct {
 }
 
 // Run the generator
-func (c *Command) Run(rootPath string, data Data) error {
+func (c Command) Run(rootPath string, data Data) error {
 	return chdir(rootPath, func() error {
 		if c.Should != nil && !c.Should(data) {
 			return nil
@@ -30,8 +30,8 @@ func (c *Command) Run(rootPath string, data Data) error {
 }
 
 // NewCommand ready to run
-func NewCommand(cmd *exec.Cmd) *Command {
-	return &Command{
+func NewCommand(cmd *exec.Cmd) Command {
+	return Command{
 		Command: cmd,
 		Should:  nullShould,
 	}

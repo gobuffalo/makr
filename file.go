@@ -3,9 +3,9 @@ package makr
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"os"
 	"path/filepath"
+	"text/template"
 
 	"github.com/pkg/errors"
 )
@@ -20,7 +20,7 @@ type File struct {
 }
 
 // Run the generator
-func (f *File) Run(rootPath string, data Data) error {
+func (f File) Run(rootPath string, data Data) error {
 	return chdir(rootPath, func() error {
 		if f.Should != nil && !f.Should(data) {
 			return nil
@@ -40,7 +40,7 @@ func (f *File) Run(rootPath string, data Data) error {
 	})
 }
 
-func (f *File) save(rootPath, path, body string) error {
+func (f File) save(rootPath, path, body string) error {
 	dir := filepath.Dir(path)
 	err := os.MkdirAll(filepath.Join(rootPath, dir), 0755)
 	if err != nil {
@@ -63,16 +63,22 @@ func (f *File) save(rootPath, path, body string) error {
 }
 
 func (f *File) render(s string, data Data) (string, error) {
-	t, err := template.New(s).Parse(s)
-	t = t.Funcs(f.TemplateFuncs)
+	t := template.New(s)
+	if f.TemplateFuncs != nil {
+		t = t.Funcs(f.TemplateFuncs)
+	}
+	t, err := t.Parse(s)
+	if err != nil {
+		return "", err
+	}
 	bb := &bytes.Buffer{}
 	err = t.Execute(bb, data)
 	return bb.String(), err
 }
 
 // NewFile set up with sensible defaults
-func NewFile(path string, t string) *File {
-	return &File{
+func NewFile(path string, t string) File {
+	return File{
 		Path:          path,
 		Template:      t,
 		TemplateFuncs: Helpers,

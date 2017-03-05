@@ -10,7 +10,7 @@ type Func struct {
 }
 
 // Run the generator
-func (f *Func) Run(rootPath string, data Data) error {
+func (f Func) Run(rootPath string, data Data) error {
 	return chdir(rootPath, func() error {
 		if f.Should != nil && !f.Should(data) {
 			return nil
