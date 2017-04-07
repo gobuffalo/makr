@@ -22,12 +22,14 @@ type Runnable interface {
 type Generator struct {
 	Runners []Runnable
 	Should  ShouldFunc
+	Data    Data
 }
 
 // New Generator
 func New() *Generator {
 	return &Generator{
 		Runners: []Runnable{},
+		Data:    Data{},
 	}
 }
 
@@ -38,11 +40,18 @@ func (g *Generator) Add(r Runnable) {
 
 // Run all of the generators
 func (g *Generator) Run(rootPath string, data Data) error {
+	dd := Data{}
+	for k, v := range data {
+		dd[k] = v
+	}
+	for k, v := range g.Data {
+		dd[k] = v
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	return chdir(rootPath, func() error {
 		if g.Should != nil {
-			b := g.Should(data)
+			b := g.Should(dd)
 			if !b {
 				return nil
 			}
@@ -60,7 +69,7 @@ func (g *Generator) Run(rootPath string, data Data) error {
 			case <-ctx.Done():
 				break
 			default:
-				err := r.Run(rootPath, data)
+				err := r.Run(rootPath, dd)
 				if err != nil {
 					return errors.WithStack(err)
 				}
