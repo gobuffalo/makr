@@ -18,7 +18,10 @@ func GoGet(pkg string, opts ...string) *exec.Cmd {
 
 // GoFmt is command that will use `goimports` if available,
 // or fail back to `gofmt` otherwise.
-func GoFmt() *exec.Cmd {
+func GoFmt(files ...string) *exec.Cmd {
+	if len(files) == 0 {
+		files = []string{"."}
+	}
 	c := "gofmt"
 	_, err := exec.LookPath("goimports")
 	if err == nil {
@@ -28,5 +31,7 @@ func GoFmt() *exec.Cmd {
 	if err != nil {
 		return exec.Command("echo", "could not find gofmt or goimports")
 	}
-	return exec.Command(c, "-w", ".")
+	args := []string{"-w"}
+	args = append(args, files...)
+	return exec.Command(c, args...)
 }

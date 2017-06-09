@@ -2,7 +2,10 @@ package makr
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -40,6 +43,7 @@ func (g *Generator) Add(r Runnable) {
 
 // Run all of the generators
 func (g *Generator) Run(rootPath string, data Data) error {
+	defer g.fmt(rootPath)
 	dd := Data{}
 	for k, v := range data {
 		dd[k] = v
@@ -77,6 +81,32 @@ func (g *Generator) Run(rootPath string, data Data) error {
 		}
 		return nil
 	})
+}
+
+func (g *Generator) fmt(rootPath string) {
+	pwd, _ := os.Getwd()
+	files := []string{}
+	filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+		path = strings.TrimPrefix(path, pwd+"/")
+		if strings.Contains(path, ".git") || strings.Contains(path, "node_modules") || strings.Contains(path, "vendor"+string(os.PathSeparator)) {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if filepath.Ext(path) == ".go" {
+			files = append(files, path)
+		}
+		return nil
+	})
+	c := GoFmt(files...)
+	fmt.Printf("--> %s\n", strings.Join(c.Args, " "))
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	err := c.Run()
+	if err != nil {
+		fmt.Printf("Error running %s: %s", strings.Join(c.Args, " "), err.Error())
+	}
 }
 
 func chdir(path string, fn func() error) error {
