@@ -43,7 +43,7 @@ func (g *Generator) Add(r Runnable) {
 
 // Run all of the generators
 func (g *Generator) Run(rootPath string, data Data) error {
-	defer g.fmt(rootPath)
+	// defer g.fmt(rootPath)
 	dd := Data{}
 	for k, v := range data {
 		dd[k] = v
@@ -83,7 +83,7 @@ func (g *Generator) Run(rootPath string, data Data) error {
 	})
 }
 
-func (g *Generator) fmt(rootPath string) {
+func (g *Generator) Fmt(rootPath string) {
 	pwd, _ := os.Getwd()
 	files := []string{}
 	filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
