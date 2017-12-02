@@ -26,16 +26,15 @@ func GoFmt(files ...string) *exec.Cmd {
 	if len(files) == 0 {
 		files = []string{"."}
 	}
-	c := "gofmt"
-	_, err := exec.LookPath("goimports")
-	if err == nil {
-		c = "goimports"
-	}
-	_, err = exec.LookPath("gofmt")
+	c := "goimports"
+	_, err := exec.LookPath(c)
 	if err != nil {
-		return exec.Command("echo", "could not find gofmt or goimports")
+		c = "gofmt"
+		_, err = exec.LookPath(c)
+		if err != nil {
+			return []string{"could not find gofmt or goimports"}
+		}
 	}
-	args := []string{"-w"}
-	args = append(args, files...)
+	args := append([]string{"-w"}, files...)
 	return exec.Command(c, args...)
 }
