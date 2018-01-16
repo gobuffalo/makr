@@ -100,7 +100,7 @@ func (g *Generator) Fmt(rootPath string) {
 		return nil
 	})
 	c := GoFmt(files...)
-	fmt.Printf("--> %s\n", strings.Join(c.Args, " "))
+	fmt.Printf("         run  %s\n", strings.Join(c.Args, " "))
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
 	err := c.Run()
