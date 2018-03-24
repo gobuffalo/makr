@@ -88,7 +88,12 @@ func (g *Generator) Fmt(rootPath string) {
 	pwd, _ := os.Getwd()
 	files := []string{}
 	filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
-		path = strings.TrimPrefix(path, pwd+"/")
+		rel, err := filepath.Rel(pwd, path)
+		if err != nil {
+			rel = strings.TrimPrefix(path, pwd+string(filepath.Separator))
+		}
+		path = rel
+
 		if strings.Contains(path, ".git") || strings.Contains(path, "node_modules") || strings.Contains(path, "vendor"+string(os.PathSeparator)) {
 			if info.IsDir() {
 				return filepath.SkipDir
